@@ -44,6 +44,11 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Root welcome endpoint
+app.get('/', (_req, res) => {
+  res.json({ message: 'Welcome to JobNest API Server', status: 'online', health: '/api/health' });
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'JobNest API is running' });
