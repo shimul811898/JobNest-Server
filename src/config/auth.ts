@@ -20,7 +20,10 @@ export const getAuth = () => {
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
     basePath: '/api/auth/better',
     trustedOrigins: [
-      process.env.CLIENT_URL || 'http://localhost:3001',
+      process.env.CLIENT_URL || 'https://job-nest-mauve-rho.vercel.app',
+      'https://job-nest-mauve-rho.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000',
     ],
     emailAndPassword: {
       enabled: true,
