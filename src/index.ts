@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { toNodeHandler } from 'better-auth/node';
 import connectDB from './config/db';
 import { getAuth } from './config/auth';
 import authRoutes from './routes/authRoutes';
@@ -846,7 +845,8 @@ app.use(async (_req, _res, next) => {
 app.all('/api/auth/better/*', async (req, res, next) => {
   try {
     await connectDB();
-    const auth = getAuth();
+    const { toNodeHandler } = await import('better-auth/node');
+    const auth = await getAuth();
     const handler = toNodeHandler(auth);
     return handler(req, res);
   } catch (error) {

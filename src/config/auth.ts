@@ -1,11 +1,9 @@
-import { betterAuth } from 'better-auth';
-import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import mongoose from 'mongoose';
 
 let cachedAuth: any = null;
 
 // Lazy getter — called after mongoose.connect() has been established
-export const getAuth = () => {
+export const getAuth = async () => {
   if (cachedAuth) return cachedAuth;
 
   const client = mongoose.connection.getClient();
@@ -13,6 +11,9 @@ export const getAuth = () => {
     throw new Error('Database client not initialized. Ensure connectDB() runs before getAuth().');
   }
   const db = client.db();
+
+  const { betterAuth } = await import('better-auth');
+  const { mongodbAdapter } = await import('better-auth/adapters/mongodb');
 
   cachedAuth = betterAuth({
     database: mongodbAdapter(db),
