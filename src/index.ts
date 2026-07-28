@@ -861,8 +861,9 @@ app.all('/api/auth/better/*', async (req, res, next) => {
     const auth = await getAuth();
     const handler = toNodeHandler(auth);
     return handler(req, res);
-  } catch (error) {
-    next(error);
+  } catch (error: any) {
+    console.error('Better Auth error:', error);
+    res.status(500).json({ message: 'Authentication service error', error: error?.message || String(error) });
   }
 });
 

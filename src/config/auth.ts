@@ -7,11 +7,10 @@ const dynamicImport = new Function('specifier', 'return import(specifier)');
 export const getAuth = async () => {
   if (cachedAuth) return cachedAuth;
 
-  const client = mongoose.connection.getClient();
-  if (!client) {
-    throw new Error('Database client not initialized. Ensure connectDB() runs before getAuth().');
+  const db = mongoose.connection.db || (mongoose.connection.getClient ? mongoose.connection.getClient().db() : null);
+  if (!db) {
+    throw new Error('Database connection not established. Ensure connectDB() runs before getAuth().');
   }
-  const db = client.db();
 
   const { betterAuth } = await dynamicImport('better-auth');
   const { mongodbAdapter } = await dynamicImport('better-auth/adapters/mongodb');
