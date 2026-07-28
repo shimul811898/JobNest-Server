@@ -89,8 +89,9 @@ export const getAllJobs = async (req: AuthRequest, res: Response): Promise<void>
       page: pageNum,
       totalPages: Math.ceil(total / limitNum),
     });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error fetching jobs' });
+  } catch (error: any) {
+    console.error('getAllJobs error:', error);
+    res.status(500).json({ message: 'Server error fetching jobs', error: error?.message || String(error) });
   }
 };
 
