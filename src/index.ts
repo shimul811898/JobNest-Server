@@ -846,11 +846,13 @@ app.use(async (_req, _res, next) => {
   }
 });
 
+const dynamicImport = new Function('specifier', 'return import(specifier)');
+
 // Better Auth route handler (lazy initialization after DB connection)
 app.all('/api/auth/better/*', async (req, res, next) => {
   try {
     await connectDB();
-    const { toNodeHandler } = await import('better-auth/node');
+    const { toNodeHandler } = await dynamicImport('better-auth/node');
     const auth = await getAuth();
     const handler = toNodeHandler(auth);
     return handler(req, res);

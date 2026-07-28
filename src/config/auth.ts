@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 let cachedAuth: any = null;
+const dynamicImport = new Function('specifier', 'return import(specifier)');
 
 // Lazy getter — called after mongoose.connect() has been established
 export const getAuth = async () => {
@@ -12,8 +13,8 @@ export const getAuth = async () => {
   }
   const db = client.db();
 
-  const { betterAuth } = await import('better-auth');
-  const { mongodbAdapter } = await import('better-auth/adapters/mongodb');
+  const { betterAuth } = await dynamicImport('better-auth');
+  const { mongodbAdapter } = await dynamicImport('better-auth/adapters/mongodb');
 
   cachedAuth = betterAuth({
     database: mongodbAdapter(db),
