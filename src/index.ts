@@ -820,19 +820,31 @@ const autoSeed = async () => {
   }
 };
 
-// Connect to DB and start server
-connectDB().then(() => {
-  // Initialize Better Auth AFTER DB connection is established
-  const auth = getAuth();
+// Connect DB on every request middleware for serverless
+app.use(async (_req, _res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
-  // Mount Better Auth handler BEFORE express.json()
-  app.all('/api/auth/better/*', toNodeHandler(auth));
+// Initialize Better Auth
+const auth = getAuth();
+app.all('/api/auth/better/*', toNodeHandler(auth));
 
-  autoSeed().then(() => {
-    app.listen(PORT, () => {
-      console.log(`\n🚀 JobNest API Server running on http://localhost:${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-      console.log(`🔐 Better Auth: http://localhost:${PORT}/api/auth/better\n`);
+// Connect to DB and start server locally (not on Vercel)
+if (!process.env.VERCEL) {
+  connectDB().then(() => {
+    autoSeed().then(() => {
+      app.listen(PORT, () => {
+        console.log(`\n🚀 JobNest API Server running on http://localhost:${PORT}`);
+        console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+        console.log(`🔐 Better Auth: http://localhost:${PORT}/api/auth/better\n`);
+      });
     });
   });
-});
+}
+
+export default app;

@@ -4,6 +4,11 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 let mongod: MongoMemoryServer | null = null;
 
 const connectDB = async (): Promise<void> => {
+  // Return early if already connected to MongoDB
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+
   const dbUrl = process.env.MONGODB_URI;
 
   // Try Atlas / remote connection first
@@ -14,21 +19,28 @@ const connectDB = async (): Promise<void> => {
       console.log(`MongoDB Atlas Connected: ${conn.connection.host}`);
       return;
     } catch (error) {
-      console.warn('Atlas connection failed, falling back to in-memory MongoDB...', (error as Error).message);
+      console.warn('Atlas connection failed:', (error as Error).message);
+      if (process.env.VERCEL) {
+        throw error;
+      }
     }
   }
 
-  // Fallback: spin up in-memory MongoDB
-  try {
-    console.log('Starting in-memory MongoDB server...');
-    mongod = await MongoMemoryServer.create();
-    const memUri = mongod.getUri();
-    console.log(`In-memory MongoDB started: ${memUri}`);
-    const conn = await mongoose.connect(memUri);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+  // Fallback: spin up in-memory MongoDB (Local development only)
+  if (!process.env.VERCEL) {
+    try {
+      console.log('Starting in-memory MongoDB server...');
+      mongod = await MongoMemoryServer.create();
+      const memUri = mongod.getUri();
+      console.log(`In-memory MongoDB started: ${memUri}`);
+      const conn = await mongoose.connect(memUri);
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      process.exit(1);
+    }
+  } else {
+    throw new Error('MONGODB_URI environment variable is required on Vercel.');
   }
 };
 
