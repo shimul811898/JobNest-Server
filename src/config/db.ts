@@ -1,7 +1,4 @@
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-
-let mongod: MongoMemoryServer | null = null;
 
 const connectDB = async (): Promise<void> => {
   // Return early if already connected to MongoDB
@@ -26,30 +23,28 @@ const connectDB = async (): Promise<void> => {
     }
   }
 
-  // Fallback: spin up in-memory MongoDB (Local development only)
-  if (!process.env.VERCEL) {
-    try {
-      console.log('Starting in-memory MongoDB server...');
-      mongod = await MongoMemoryServer.create();
-      const memUri = mongod.getUri();
-      console.log(`In-memory MongoDB started: ${memUri}`);
-      const conn = await mongoose.connect(memUri);
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      process.exit(1);
-    }
-  } else {
+  // Fallback: spin up in-memory MongoDB (Local development only, never on Vercel)
+  if (process.env.VERCEL) {
     throw new Error('MONGODB_URI environment variable is required on Vercel.');
+  }
+
+  try {
+    console.log('Starting in-memory MongoDB server...');
+    const { MongoMemoryServer } = await import('mongodb-memory-server');
+    const mongod = await MongoMemoryServer.create();
+    const memUri = mongod.getUri();
+    console.log(`In-memory MongoDB started: ${memUri}`);
+    const conn = await mongoose.connect(memUri);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    process.exit(1);
   }
 };
 
 export const disconnectDB = async (): Promise<void> => {
   try {
     await mongoose.disconnect();
-    if (mongod) {
-      await mongod.stop();
-    }
   } catch (error) {
     console.error('Error disconnecting from MongoDB:', error);
   }
