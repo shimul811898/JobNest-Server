@@ -2,12 +2,19 @@ import { betterAuth } from 'better-auth';
 import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import mongoose from 'mongoose';
 
+let cachedAuth: any = null;
+
 // Lazy getter — called after mongoose.connect() has been established
 export const getAuth = () => {
+  if (cachedAuth) return cachedAuth;
+
   const client = mongoose.connection.getClient();
+  if (!client) {
+    throw new Error('Database client not initialized. Ensure connectDB() runs before getAuth().');
+  }
   const db = client.db();
 
-  return betterAuth({
+  cachedAuth = betterAuth({
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET || 'jobnest-better-auth-secret-key-2026-production',
     baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
@@ -21,8 +28,8 @@ export const getAuth = () => {
     },
     socialProviders: {
       google: {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        clientId: process.env.GOOGLE_CLIENT_ID || 'dummy_client_id',
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'dummy_client_secret',
       },
     },
     session: {
@@ -48,6 +55,8 @@ export const getAuth = () => {
       },
     },
   });
+
+  return cachedAuth;
 };
 
-export type BetterAuthInstance = ReturnType<typeof getAuth>;
+export type BetterAuthInstance = any;

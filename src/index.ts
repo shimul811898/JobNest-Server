@@ -830,9 +830,17 @@ app.use(async (_req, _res, next) => {
   }
 });
 
-// Initialize Better Auth
-const auth = getAuth();
-app.all('/api/auth/better/*', toNodeHandler(auth));
+// Better Auth route handler (lazy initialization after DB connection)
+app.all('/api/auth/better/*', async (req, res, next) => {
+  try {
+    await connectDB();
+    const auth = getAuth();
+    const handler = toNodeHandler(auth);
+    return handler(req, res);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Connect to DB and start server locally (not on Vercel)
 if (!process.env.VERCEL) {
