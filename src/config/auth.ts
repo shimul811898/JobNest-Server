@@ -19,7 +19,7 @@ export const getAuth = async () => {
   cachedAuth = betterAuth({
     database: mongodbAdapter(db),
     secret: process.env.BETTER_AUTH_SECRET || 'jobnest-better-auth-secret-key-2026-production',
-    baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5000',
+    baseURL: process.env.BETTER_AUTH_URL || 'https://job-nest-server-gilt.vercel.app',
     basePath: '/api/auth/better',
     trustedOrigins: [
       process.env.CLIENT_URL || 'https://job-nest-mauve-rho.vercel.app',
