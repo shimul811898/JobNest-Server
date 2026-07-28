@@ -44,6 +44,11 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Silence browser favicon 404 logs
+app.get(['/favicon.ico', '/favicon.png'], (_req, res) => {
+  res.status(204).end();
+});
+
 // Root welcome endpoint
 app.get('/', (_req, res) => {
   res.json({ message: 'Welcome to JobNest API Server', status: 'online', health: '/api/health' });
